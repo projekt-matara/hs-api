@@ -225,6 +225,14 @@ exports.changePassword = async function(ctx, next) {
 	}
 }
 
+exports.getUser = async function(ctx, next) {
+	try {
+		const x = await User.findOne({email: ctx.request.body.email})
+		if (x) {ctx.body = x} else {throw new Error("error")}
+	} catch (e) {
+		$.errorHandler(e, ctx)
+	}
+}
 
 
 

@@ -11,6 +11,9 @@ const koa = require('koa'),
 			bodyParser = require('koa-bodyparser'),
 			mongoose = require('mongoose'),
 			user = require('./controllers/user'),
+			passport = require('koa-passport'),
+			session = require('koa-generic-session'),
+			authController = require('./controllers/auth')
 			app = new koa()
 
 // security headers
@@ -18,6 +21,8 @@ app.use(helmet())
 
 // logging
 app.use(logger())
+
+// 
 
 // format response as JSON
 app.use(convert(koaRes()))
@@ -50,6 +55,14 @@ app.use(compress({
 // body parser
 app.use(bodyParser())
 
+// session config
+app.key = ['secret']
+app.use(convert(session()))
+
+// passport config
+app.use(passport.initialize())
+app.use(passport.session())
+
 // cors
 app.use(convert(cors()))
 
@@ -75,7 +88,8 @@ app.use(router(_ => {
 	_.put('/stripe/cancelsubscription', user.cancelSubscription),
 	_.put('/stripe/editpayemail', user.editPayEmail),
 	_.put('/stripe/changecard', user.changeCard),
-	_.put('/changepassword', user.changePassword)
+	_.put('/changepassword', user.changePassword),
+	_.post('/user', authController.isAuthenticated, user.getUser)
 }))
 
 app.listen(3000)
