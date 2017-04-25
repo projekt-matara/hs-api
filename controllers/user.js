@@ -1,5 +1,5 @@
 /*
-	API Code meant specifically for account dashboard functionality.
+	API Code meant for handling the User model.
 */
 
 const request = require('request-promise'),
@@ -9,7 +9,7 @@ const request = require('request-promise'),
 			jwt = Promise.promisifyAll(require('jsonwebtoken')),
 			config = require('../config')
 			stripeHeader = {Authorization: "Bearer " + config.stripe.apiKey},
-			$ = require('./utility')
+			$ = require('../services/utility')
 
 // dashboard login
 exports.login = async function(ctx, next) {

@@ -10,7 +10,7 @@ const koa = require('koa'),
 			router = require('koa-simple-router'),
 			bodyParser = require('koa-bodyparser'),
 			mongoose = require('mongoose'),
-			dashboard = require('./lib/dashboard'),
+			user = require('./controllers/user'),
 			app = new koa()
 
 // security headers
@@ -67,15 +67,15 @@ mongoose
 
 // router
 app.use(router(_ => {
-	_.post('/login', dashboard.login),
-	_.post('/createuser', dashboard.createUser),
-	_.put('/edit_email', dashboard.editUserEmail),
-	_.put('/deleteuser', dashboard.deleteUser),
-	_.put('/stripe/createcustomer', dashboard.createCustomer),
-	_.put('/stripe/cancelsubscription', dashboard.cancelSubscription),
-	_.put('/stripe/editpayemail', dashboard.editPayEmail),
-	_.put('/stripe/changecard', dashboard.changeCard),
-	_.put('/changepassword', dashboard.changePassword)
+	_.post('/login', user.login),
+	_.post('/createuser', user.createUser),
+	_.put('/edit_email', user.editUserEmail),
+	_.put('/deleteuser', user.deleteUser),
+	_.put('/stripe/createcustomer', user.createCustomer),
+	_.put('/stripe/cancelsubscription', user.cancelSubscription),
+	_.put('/stripe/editpayemail', user.editPayEmail),
+	_.put('/stripe/changecard', user.changeCard),
+	_.put('/changepassword', user.changePassword)
 }))
 
 app.listen(3000)
