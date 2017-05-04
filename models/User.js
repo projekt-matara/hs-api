@@ -55,15 +55,6 @@ UserSchema.plugin(require('mongoose-bcrypt'))
 UserSchema.plugin(require('mongoose-sanitizer'))
 UserSchema.plugin(require('mongoose-unique-validator'))
 
-UserSchema.methods.verifyPassword = async function(password, cb) {
-	let passwordTest = await bcrypt.compareAsync(password, this.password)
-	if (!passwordTest) {
-		return cb(err)
-	} else {
-		cb(null, passwordTest)
-	}
-}
-
 /*
 	Model set up and export
 */

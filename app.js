@@ -1,3 +1,9 @@
+/*
+*
+	Central configuration for the Halfstak API
+*
+*/
+
 const koa = require('koa'),
 			config = require('./config'),
 			convert = require('koa-convert'),
@@ -13,16 +19,34 @@ const koa = require('koa'),
 			user = require('./controllers/user'),
 			passport = require('koa-passport'),
 			session = require('koa-generic-session'),
-			authController = require('./controllers/auth')
+			authController = require('./controllers/auth'),
+			clientController = require('./controllers/client'),
+			oauth = require('./controllers/oauth2.js')
 			app = new koa()
+
+/*
+	MONGOOSE CONFIG
+*/
+mongoose.Promise = require('bluebird')
+mongoose
+.connect(config.mongo_url)
+.then((response) => {
+	console.log('connected to mongo :-)');
+})
+.catch((err) => {
+	console.log("Error connecting to Mongo");
+	console.log(err);
+})
+
+/*
+	SERVER CONFIG
+*/
 
 // security headers
 app.use(helmet())
 
 // logging
 app.use(logger())
-
-// 
 
 // format response as JSON
 app.use(convert(koaRes()))
@@ -61,22 +85,9 @@ app.use(convert(session()))
 
 // passport config
 app.use(passport.initialize())
-app.use(passport.session())
 
 // cors
 app.use(convert(cors()))
-
-// mongoose config
-mongoose.Promise = require('bluebird')
-mongoose
-.connect(config.mongo_url)
-.then((response) => {
-	console.log('connected to mongo :-)');
-})
-.catch((err) => {
-	console.log("Error connecting to Mongo");
-	console.log(err);
-})
 
 // router
 app.use(router(_ => {
@@ -89,9 +100,21 @@ app.use(router(_ => {
 	_.put('/stripe/editpayemail', user.editPayEmail),
 	_.put('/stripe/changecard', user.changeCard),
 	_.put('/changepassword', user.changePassword),
-	_.post('/user', authController.isAuthenticated, user.getUser)
+	_.post('/user', user.getUser),
+
+	// oauth testing scheme
+	_.post('/test', authController.isBearerAuthenticated, ctx => {
+		ctx.body = "trolololooooooo"
+	}),
+
+	_.post('/oauth/token', oauth.isClientAuthenticated, oauth.serveToken, oauth.oauthErrorHandler),
+
+	// get and post clients, MUST REMOVE WHEN OAUTH STARTS WORKING
+	_.get('/clients', clientController.getClients),
+	_.post('/clients', clientController.postClients)
 }))
 
+// listen on a port NEED TO CHANGE TO LISTEN TO ENVIRONMENT PRODUCTION VARIABLE
 app.listen(3000)
 
 
