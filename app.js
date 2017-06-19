@@ -4,25 +4,25 @@
 *
 */
 
-const koa = require('koa'),
-			config = require('./config'),
-			convert = require('koa-convert'),
-			cors = require('kcors'),
-			helmet = convert(require('koa-helmet'))
-			error = require('koa-json-error'),
-			logger = require('koa-logger'),
-			koaRes = require('koa-res'),
-			compress = require('koa-compress'),
-			router = require('koa-simple-router'),
-			bodyParser = require('koa-bodyparser'),
-			mongoose = require('mongoose'),
-			user = require('./controllers/user'),
-			passport = require('koa-passport'),
-			session = require('koa-generic-session'),
-			authController = require('./controllers/auth'),
-			clientController = require('./controllers/client'),
-			oauth = require('./controllers/oauth2.js')
-			app = new koa()
+const koa = require('koa')
+const config = require('./config')
+const convert = require('koa-convert')
+const cors = require('kcors')
+const helmet = convert(require('koa-helmet'))
+const error = require('koa-json-error')
+const logger = require('koa-logger')
+const koaRes = require('koa-res')
+const compress = require('koa-compress')
+const router = require('koa-simple-router')
+const bodyParser = require('koa-bodyparser')
+const mongoose = require('mongoose')
+const user = require('./controllers/user')
+const passport = require('koa-passport')
+const session = require('koa-generic-session')
+const authController = require('./controllers/auth')
+const clientController = require('./controllers/client')
+const jwt = require('koa-jwt')
+const app = new koa()
 
 /*
 	MONGOOSE CONFIG
@@ -41,6 +41,23 @@ mongoose
 /*
 	SERVER CONFIG
 */
+
+// error handling
+app.use(async (ctx, next) => {
+  try {
+    await next()
+  } catch (err) {
+    if (err.status === 401) {
+    	ctx.status = 500
+    	ctx.body = "There has been an error processing your request."
+    	ctx.app.emit('error', err, ctx)
+    } else {
+    	ctx.status = err.status || 500
+	    ctx.body = err.message
+	    ctx.app.emit('error', err, ctx)
+    }
+  }
+})
 
 // security headers
 app.use(helmet())
@@ -89,7 +106,19 @@ app.use(passport.initialize())
 // cors
 app.use(convert(cors()))
 
-// router
+// unprotected router
+app.use(router(_ => {
+	_.post('/authtest', async ctx => {
+		console.log('testing one two')
+		console.log(ctx.headers)
+		ctx.body = ctx.headers.authorization
+	})
+}))
+
+// test jwt
+app.use(jwt({ secret: config.secret }))
+
+// protected router
 app.use(router(_ => {
 	_.post('/login', user.login),
 	_.post('/createuser', user.createUser),
@@ -101,17 +130,9 @@ app.use(router(_ => {
 	_.put('/stripe/changecard', user.changeCard),
 	_.put('/changepassword', user.changePassword),
 	_.post('/user', user.getUser),
-
-	// oauth testing scheme
-	_.post('/test', authController.isBearerAuthenticated, ctx => {
-		ctx.body = "trolololooooooo"
-	}),
-
-	_.post('/oauth/token', oauth.isClientAuthenticated, oauth.serveToken, oauth.oauthErrorHandler),
-
-	// get and post clients, MUST REMOVE WHEN OAUTH STARTS WORKING
-	_.get('/clients', clientController.getClients),
-	_.post('/clients', clientController.postClients)
+	_.post('/protectedroute', async ctx => {
+		ctx.body = "protected resource"
+	})
 }))
 
 // listen on a port NEED TO CHANGE TO LISTEN TO ENVIRONMENT PRODUCTION VARIABLE

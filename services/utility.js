@@ -36,6 +36,7 @@ exports.generateNewUser = (email, username, password) => {
 		stripeExp: '',
 		stripeExpMonth: null,
 		stripeExpYear: null,
+		role: 'user',
 		numDevicesAllowed: 1,
 		deviceIds: []
 	}

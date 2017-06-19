@@ -3,10 +3,9 @@
 */
 
 const passport = require('koa-passport'),
-			BasicStrategy = require('passport-http').BasicStrategy,
       BearerStrategy = require('passport-http-bearer').Strategy,
 			User = require('../models/User'),
-      Token = require('../models/Token'),
+      Token = require('../models/Token')
 
 // Passport Access Token Strategy
 passport.use("accessToken", new BearerStrategy(

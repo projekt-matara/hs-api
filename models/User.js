@@ -1,9 +1,7 @@
-const Promise = require('bluebird'),
- 			mongoose = require('mongoose'),
-			validate = require('mongoose-validator'),
-			bcrypt = Promise.promisifyAll(require('bcrypt-nodejs')),
-			$ = require('../services/utility.js')
-
+const Promise = require('bluebird')
+const	validate = require('mongoose-validator')
+const bcrypt = Promise.promisifyAll(require('bcrypt-nodejs'))
+const mongoose = require('mongoose')
 /*
 	Validation setup
 */
@@ -46,6 +44,7 @@ UserSchema =  mongoose.Schema({
 	stripeExp: String,
 	stripeExpMonth: Number,
 	stripeExpYear: Number,
+	role: {type: String, required: true},
 	password: {type: String, required: true, bcrypt: true, validate: passwordValidator},
 	numDevicesAllowed: Number,
 	deviceIds: [String]

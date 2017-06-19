@@ -12,6 +12,7 @@
   "dependencies": {
     "bcrypt-nodejs": "^0.0.3",
     "bluebird": "^3.5.0",
+    "jsonwebtoken": "^7.4.0",
     "kcors": "^1.3.2",
     "koa": "^2.2.0",
     "koa-bodyparser": "^4.2.0",
@@ -20,6 +21,7 @@
     "koa-generic-session": "^1.11.5",
     "koa-helmet": "^3.1.0",
     "koa-json-error": "^3.1.2",
+    "koa-jwt": "^3.2.2",
     "koa-logger": "^2.0.1",
     "koa-passport": "^3.0.0",
     "koa-res": "^1.3.0",
@@ -29,6 +31,7 @@
     "mongoose-sanitizer": "^1.0.0",
     "mongoose-unique-validator": "^1.0.5",
     "mongoose-validator": "^1.2.5",
+    "node-jose": "^0.9.4",
     "nodemailer": "^4.0.1",
     "nodemailer-mailgun-transport": "^1.3.4",
     "passport-http-bearer": "^1.0.1",
