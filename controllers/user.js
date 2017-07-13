@@ -15,6 +15,7 @@ const request = require('request-promise'),
 	LOGIN
 */
 exports.login = async function(ctx, next) {
+	console.log(ctx.request.body)
 	// Find user by email
 	const user = await User.findOne({email: ctx.request.body.email})
 	// handle error
@@ -34,7 +35,6 @@ exports.login = async function(ctx, next) {
 		}
 	}
 }
-
 
 /*
 	CREATE USER

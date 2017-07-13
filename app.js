@@ -1,9 +1,9 @@
 /*
 *
-	Central configuration for the Halfstak API
+  Central configuration for the Halfstak API
 *
 */
-
+const Promise = require('bluebird')
 const koa = require('koa')
 const config = require('./config')
 const convert = require('koa-convert')
@@ -22,24 +22,29 @@ const session = require('koa-generic-session')
 const authController = require('./controllers/auth')
 const clientController = require('./controllers/client')
 const jwt = require('koa-jwt')
+const authz = require('./services/authorization')
+const auth = require('./controllers/auth')
+const oauth = require('./controllers/oauth2')
+const client = require('./controllers/clientAuth')
 const app = new koa()
+const server = oauth.server
 
 /*
-	MONGOOSE CONFIG
+  MONGOOSE CONFIG
 */
 mongoose.Promise = require('bluebird')
 mongoose
 .connect(config.mongo_url)
 .then((response) => {
-	console.log('connected to mongo :-)');
+  console.log('connected to mongo :-)');
 })
 .catch((err) => {
-	console.log("Error connecting to Mongo");
-	console.log(err);
+  console.log("Error connecting to Mongo");
+  console.log(err);
 })
 
 /*
-	SERVER CONFIG
+  SERVER CONFIG
 */
 
 // error handling
@@ -48,13 +53,18 @@ app.use(async (ctx, next) => {
     await next()
   } catch (err) {
     if (err.status === 401) {
-    	ctx.status = 500
-    	ctx.body = "There has been an error processing your request."
-    	ctx.app.emit('error', err, ctx)
+      ctx.status = 500
+      ctx.body = "There has been an error processing your request."
+      ctx.app.emit('error', err, ctx)
+    } 
+    else if (err.status === 501) {
+      console.log(err.message)
+      ctx.body = err.message
+      ctx.app.emit('error', err, ctx)
     } else {
-    	ctx.status = err.status || 500
-	    ctx.body = err.message
-	    ctx.app.emit('error', err, ctx)
+      ctx.status = err.status || 500
+      ctx.body = err.message
+      ctx.app.emit('error', err, ctx)
     }
   }
 })
@@ -70,24 +80,24 @@ app.use(convert(koaRes()))
 
 // response time
 app.use(async function (ctx, next) {
-	const start = new Date()
-	await next()
-	const ms = new Date() - start
-	ctx.set('X-Response-Time', `${ms}ms`)
+  const start = new Date()
+  await next()
+  const ms = new Date() - start
+  ctx.set('X-Response-Time', `${ms}ms`)
 })
 
 // logger
 app.use(async function (ctx, next) {
-	const start = new Date()
-	await next()
-	const ms = new Date() - start
-	console.log(`${ctx.method} ${ctx.url} - ${ms}`)
+  const start = new Date()
+  await next()
+  const ms = new Date() - start
+  console.log(`${ctx.method} ${ctx.url} - ${ms}`)
 })
 
 // compression
 app.use(compress({
   filter: function (content_type) {
-  	return /text/i.test(content_type)
+    return /text/i.test(content_type)
   },
   threshold: 2048,
   flush: require('zlib').Z_SYNC_FLUSH
@@ -108,11 +118,11 @@ app.use(convert(cors()))
 
 // unprotected router
 app.use(router(_ => {
-	_.post('/authtest', async ctx => {
-		console.log('testing one two')
-		console.log(ctx.headers)
-		ctx.body = ctx.headers.authorization
-	})
+  _.post('/oauth/token',
+    passport.authenticate(['clientBasic', 'clientPassword'], { session: false }),
+    server.token(),
+    server.errorHandler()),
+  _.post('/createuser', user.createUser)
 }))
 
 // test jwt
@@ -120,25 +130,18 @@ app.use(jwt({ secret: config.secret }))
 
 // protected router
 app.use(router(_ => {
-	_.post('/login', user.login),
-	_.post('/createuser', user.createUser),
-	_.put('/edit_email', user.editUserEmail),
-	_.put('/deleteuser', user.deleteUser),
-	_.put('/stripe/createcustomer', user.createCustomer),
-	_.put('/stripe/cancelsubscription', user.cancelSubscription),
-	_.put('/stripe/editpayemail', user.editPayEmail),
-	_.put('/stripe/changecard', user.changeCard),
-	_.put('/changepassword', user.changePassword),
-	_.post('/user', user.getUser),
-	_.post('/protectedroute', async ctx => {
-		ctx.body = "protected resource"
-	})
+  _.put('/edit_email', authz.editUserEmail, user.editUserEmail),
+  _.put('/deleteuser', user.deleteUser),
+  _.put('/stripe/createcustomer', user.createCustomer),
+  _.put('/stripe/cancelsubscription', user.cancelSubscription),
+  _.put('/stripe/editpayemail', user.editPayEmail),
+  _.put('/stripe/changecard', user.changeCard),
+  _.put('/changepassword', user.changePassword),
+  _.post('/user', user.getUser),
+  _.post('/protectedroute', authz.editUserEmail, async ctx => {
+     ctx.body = "protected resource"
+  })
 }))
 
 // listen on a port NEED TO CHANGE TO LISTEN TO ENVIRONMENT PRODUCTION VARIABLE
 app.listen(3000)
-
-
-
-
-
