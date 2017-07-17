@@ -26,8 +26,10 @@ const authz = require('./services/authorization')
 const auth = require('./controllers/auth')
 const oauth = require('./controllers/oauth2')
 const client = require('./controllers/clientAuth')
+const authn = require('./services/authentication')
+
+// create Koa server
 const app = new koa()
-const server = oauth.server
 
 /*
   MONGOOSE CONFIG
@@ -96,7 +98,7 @@ app.use(async function (ctx, next) {
 
 // compression
 app.use(compress({
-  filter: function (content_type) {
+  filter: (content_type) => {
     return /text/i.test(content_type)
   },
   threshold: 2048,
@@ -120,8 +122,8 @@ app.use(convert(cors()))
 app.use(router(_ => {
   _.post('/oauth/token',
     passport.authenticate(['clientBasic', 'clientPassword'], { session: false }),
-    server.token(),
-    server.errorHandler()),
+    oauth.server.token(),
+    oauth.server.errorHandler()),
   _.post('/createuser', user.createUser)
 }))
 
@@ -137,10 +139,7 @@ app.use(router(_ => {
   _.put('/stripe/editpayemail', user.editPayEmail),
   _.put('/stripe/changecard', user.changeCard),
   _.put('/changepassword', user.changePassword),
-  _.post('/user', user.getUser),
-  _.post('/protectedroute', authz.editUserEmail, async ctx => {
-     ctx.body = "protected resource"
-  })
+  _.post('/user/get', user.getUser)
 }))
 
 // listen on a port NEED TO CHANGE TO LISTEN TO ENVIRONMENT PRODUCTION VARIABLE

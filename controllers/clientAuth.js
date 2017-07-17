@@ -30,6 +30,7 @@ passport.use('clientBasic', new BasicStrategy((clientId, clientSecret, done) => 
 * login info in the request body.
 */
 passport.use('clientPassword', new ClientPasswordStrategy((clientId, clientSecret, done) => {
+  console.log('testing')
 	// find the client by their id
   Client.findOne({clientId: clientId}, (err, client) => {
 		// handle errors

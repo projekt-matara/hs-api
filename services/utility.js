@@ -15,7 +15,7 @@ exports.emailConfig = () => {
 	nodemailerMailgun = nodemailer.createTransport(mailgun(auth))
 }
 
-exports.generateJwt = async function(userId) {
+exports.generateJwt = async (userId) => {
  	const payload = {id: userId},
 				opts = {expiresIn: '1h'}
  	return jwt.signAsync(payload, config.secret, opts)
@@ -43,8 +43,8 @@ exports.generateNewUser = (email, username, password) => {
 	return newUser
 }
 
-exports.insertJwtUser = async function(user, token) {
-	let jwtUser = await {
+exports.insertJwtUser = (user, token) => {
+	let jwtUser = {
 		idToken: token,
 		id: user.id,
 		email: user.email,
@@ -63,8 +63,8 @@ exports.insertJwtUser = async function(user, token) {
 	return jwtUser
 }
 
-exports.sanitizeUser = async function (user) {
-	const userTemplate = await {
+exports.sanitizeUser = user => {
+	const userTemplate = {
 		email: user.email,
 		username: user.username,
 		id: user.id,
@@ -77,8 +77,7 @@ exports.sanitizeUser = async function (user) {
 		stripeBrand: user.stripeBrand,
 		stripeExp: user.stripeExp,
 		stripeExpMonth: user.stripeExpMonth,
-		stripeExpYear: user.stripeExpYear,
-		idToken: user.idToken
+		stripeExpYear: user.stripeExpYear
 	}
 	return userTemplate
 }
