@@ -12,30 +12,6 @@ const request = require('request-promise'),
       $ = require('../services/utility')
 
 /*
-  LOGIN
-*/
-exports.login = async function(ctx, next) {
-  // Find user by email
-  const user = await User.findOne({email: ctx.request.body.email})
-  // handle error
-  if (!user) {
-    throw new Error("Email not found.")
-  } else {
-    // check password, generate JWT, then insert them in the newly sanitized User
-    const passwordResult = await bcrypt.compareAsync(ctx.request.body.password, user.password)
-    const theJwt = await $.generateJwt(user.id)
-    const newUser = await $.insertJwtUser(user, theJwt)
-    // if the password is wrong, throw an error
-    if (!passwordResult) {
-      throw new Error('Incorrect password, please try again.')
-    } else {
-      // send the user information to the Client
-      ctx.body = newUser
-    }
-  }
-}
-
-/*
   CREATE USER
 */
 exports.createUser = async function(ctx, next) {
@@ -43,10 +19,11 @@ exports.createUser = async function(ctx, next) {
   const generateUser = $.generateNewUser(ctx.request.body.email, ctx.request.body.username, ctx.request.body.password)
   // save the new User to the database
   const newUser = await User.create(generateUser)
+  console.log(newUser.id)
   // generate a JWT
-  const theJwt = await $.generateJwt(newUser.id)
+  const theJwt = $.generateJwt(newUser.id)
   // insert the JWT into the user and sanitize the User info
-  const newUserWithJwt = await $.insertJwtUser(newUser, theJwt)
+  const newUserWithJwt = $.insertJwtUser(newUser, theJwt)
   // if there is a problem with the new user, throw an error
   if (!newUser) {
     throw new Error("User failed to create, please try again.")
@@ -62,7 +39,7 @@ exports.createUser = async function(ctx, next) {
 */
 exports.editUserEmail = async function(ctx, next) {
   // find the user by their id then update with the new email.
-  const user = await User.findByIdAndUpdate(ctx.request.body.userId, {email: ctx.request.body.newEmail})
+  const user = await User.findByIdAndUpdate(ctx.request.body.email, {email: ctx.request.body.newEmail})
   // if user updates properly, send the new email up to the client
   if (user) {
     ctx.body = {email: ctx.request.body.newEmail}

@@ -32,8 +32,8 @@ const emailValidator = [
 	Schema config
 */
 UserSchema =  mongoose.Schema({
-	username: {type: String, required: true, unique: true, validate: usernameValidator},
-	email: {type: String, required: true, unique: true, validate: emailValidator},
+	username: {type: String, required: true, unique: true},
+	email: {type: String, required: true, unique: true},
 	stripeId: String,
 	cardId: String,
 	stripeStatus: Boolean,
@@ -45,7 +45,7 @@ UserSchema =  mongoose.Schema({
 	stripeExpMonth: Number,
 	stripeExpYear: Number,
 	role: {type: String, required: true},
-	password: {type: String, required: true, bcrypt: true, validate: passwordValidator},
+	password: {type: String, required: true, bcrypt: true},
 	numDevicesAllowed: Number,
 	deviceIds: [String]
 })

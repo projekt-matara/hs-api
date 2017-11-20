@@ -31,7 +31,6 @@
     "mongoose-sanitizer": "^1.0.0",
     "mongoose-unique-validator": "^1.0.5",
     "mongoose-validator": "^1.2.5",
-    "node-jose": "^0.9.4",
     "nodemailer": "^4.0.1",
     "nodemailer-mailgun-transport": "^1.3.4",
     "oauth2orize-koa": "^1.3.2",

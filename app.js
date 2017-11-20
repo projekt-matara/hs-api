@@ -26,7 +26,6 @@ const authz = require('./services/authorization')
 const auth = require('./controllers/auth')
 const oauth = require('./controllers/oauth2')
 const client = require('./controllers/clientAuth')
-const authn = require('./services/authentication')
 
 // create Koa server
 const app = new koa()
@@ -124,7 +123,7 @@ app.use(router(_ => {
     passport.authenticate(['clientBasic', 'clientPassword'], { session: false }),
     oauth.server.token(),
     oauth.server.errorHandler()),
-  _.post('/createuser', user.createUser)
+  _.post('/user/new', user.createUser)
 }))
 
 // test jwt
@@ -132,14 +131,14 @@ app.use(jwt({ secret: config.secret }))
 
 // protected router
 app.use(router(_ => {
-  _.put('/edit_email', authz.editUserEmail, user.editUserEmail),
-  _.put('/deleteuser', user.deleteUser),
-  _.put('/stripe/createcustomer', user.createCustomer),
-  _.put('/stripe/cancelsubscription', user.cancelSubscription),
-  _.put('/stripe/editpayemail', user.editPayEmail),
-  _.put('/stripe/changecard', user.changeCard),
-  _.put('/changepassword', user.changePassword),
-  _.post('/user/get', user.getUser)
+  _.put('/user/edit-email', authz.editUserEmail, user.editUserEmail),
+  _.delete('/user/delete', user.deleteUser),
+  _.put('/user/create-customer', user.createCustomer),
+  _.put('/user/cancel-subscription', user.cancelSubscription),
+  _.put('/user/edit-pay-email', user.editPayEmail),
+  _.put('/user/change-card', user.changeCard),
+  _.put('/user/change-password', user.changePassword),
+  _.post('/user', user.getUser)
 }))
 
 // listen on a port NEED TO CHANGE TO LISTEN TO ENVIRONMENT PRODUCTION VARIABLE
